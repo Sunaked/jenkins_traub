@@ -108,31 +108,30 @@ stage3(const std::vector<std::complex<double>> &a,
 
   while (abs(s_lambda - s_lambda_prev) > epsilon &&
          num_iterations < max_iterations) {
-    std::vector<std::complex<double>> p, h_bar;
-    std::complex<double> p_at_s_lambda, h_bar_at_s_lambda;
+    // std::vector<std::complex<double>> p, h_bar;
+    // std::complex<double> p_at_s_lambda, h_bar_at_s_lambda;
 
     // std::tie(p, p_at_s_lambda) = synthetic_division(a, s_lambda);
     auto p_ = synthetic_division(convertToEigenVectorXcd(a), s_lambda);
     // std::tie(h_bar, h_bar_at_s_lambda) = synthetic_division(H_bar_lambda, s_lambda);
 
-    //NEDD FIX
-    auto h_bar_ = synthetic_division(convertToEigenVectorXcd(H_bar_lambda), s_lambda); //---
-    h_bar.insert(h_bar.begin(), 0);//---
+    auto h_bar_ = synthetic_division(convertToEigenVectorXcd(H_bar_lambda), s_lambda);
+    addElementAtBeginning(h_bar_.first, 0);
 
-    if (abs(p_at_s_lambda) < epsilon) {//---
-      return {H_bar_lambda, s_lambda, num_iterations};//---
+    if (abs(p_.second) < epsilon) {
+      return {H_bar_lambda, s_lambda, num_iterations};
     }
 
-    std::vector<std::complex<double>> H_bar_lambda_next = p;
-    for (size_t i = 0; i < p.size(); ++i) {
-      H_bar_lambda_next[i] -= (p_at_s_lambda / h_bar_at_s_lambda) * h_bar[i];
+    std::vector<std::complex<double>> H_bar_lambda_next = convertToVectorFromEigenVectorXcd(p_.first);
+    for (size_t i = 0; i < p_.first.size(); ++i) {
+      H_bar_lambda_next[i] -= (p_.second / h_bar_.second) * h_bar_.first[i];
     }
     auto H_bar_next = evaluate(H_bar_lambda_next);
 
     num_iterations++;
 
     s_lambda_prev = s_lambda;
-    s_lambda = s_lambda - p_at_s_lambda / H_bar_next(s_lambda);
+    s_lambda = s_lambda - p_.second / H_bar_next(s_lambda);
     H_bar_lambda = H_bar_lambda_next;
   }
 
