@@ -1,4 +1,10 @@
 #include "next_step.h"
+#include <complex>
+#include <eigen3/Eigen/Dense>
+#include <iostream>
+#include <random>
+#include <vector>
+
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -157,6 +163,96 @@ std::complex<double> newton(
   }
 
   return x_i;
+}
+
+std::pair<std::vector<std::complex<double>>, std::complex<double>>
+jenkins_traub_inner(const std::vector<std::complex<double>> &coefficients,
+                    double epsilon, int max_iterations,
+                    bool do_stage_one = true) {
+  // Handle special cases
+  if (!coefficients.empty() &&
+      coefficients.back() == std::complex<double>(0, 0)) {
+    return {coefficients, std::complex<double>(0, 0)};
+  }
+
+  if (coefficients.size() < 2) {
+    return {};
+  }
+
+  std::vector<std::complex<double>> a = coefficients;
+
+  // Scale coefficients so leading coefficient is 1
+  if (a.front() != std::complex<double>(1, 0)) {
+    std::complex<double> leading_coeff = a.front();
+    for (auto &coeff : a) {
+      coeff /= leading_coeff;
+    }
+  }
+
+  if (a.size() == 2) {
+    return {{}, -a.back() / a.front()};
+  }
+
+  // Compute H^0, the derivative of the polynomial
+  std::vector<std::complex<double>> H_0(a.size() - 1);
+  for (size_t i = 1; i < a.size(); ++i) {
+    H_0[i - 1] = a[i] * static_cast<double>(i);
+  }
+
+  std::vector<std::complex<double>> H_lambda = H_0;
+  std::complex<double> s_lambda;
+
+  // Stage 1
+  if (do_stage_one) {
+    H_lambda = stage1(a, H_0, epsilon, 5);
+    std::cout << "Done with Stage 1." << std::endl;
+  }
+
+  // Compute modified polynomial and its derivative
+  std::vector<std::complex<double>> modified_coefficients = a;
+  for (auto &coeff : modified_coefficients) {
+    coeff = std::abs(coeff);
+  }
+  modified_coefficients.back() *= -1;
+
+  std::vector<std::complex<double>> modified_derivative(
+      modified_coefficients.size() - 1);
+  for (size_t i = 1; i < modified_coefficients.size(); ++i) {
+    modified_derivative[i - 1] =
+        modified_coefficients[i] * static_cast<double>(i);
+  }
+
+  auto mod_function = evaluate(modified_coefficients);
+  auto mod_derivative = evaluate(modified_derivative);
+
+  // Newton's iteration to find beta
+  std::complex<double> beta = newton(std::complex<double>(1, 0), mod_function,
+                                     mod_derivative, 0.01, 500);
+
+  // Random number generation for phi_random
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> dis(0, 2 * M_PI);
+
+  while (true) {
+    double phi_random = dis(gen);
+    s_lambda = std::complex<double>(cos(phi_random), sin(phi_random)) * beta;
+
+    try {
+      std::tie(H_lambda, s_lambda) =
+          stage2(a, H_lambda, s_lambda, epsilon, 100);
+      std::cout << "Done with Stage 2." << std::endl;
+
+      auto [H_bar_lambda, s_lambda_final, num_iterations] =
+          stage3(a, H_lambda, s_lambda, epsilon, max_iterations);
+      std::cout << "Done with Stage 3 after " << num_iterations
+                << " iterations." << std::endl;
+      return {H_bar_lambda, s_lambda_final};
+    } catch (const std::exception &e) {
+      max_iterations *= 2;
+      continue;
+    }
+  }
 }
 
 int main() {
