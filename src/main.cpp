@@ -1,15 +1,11 @@
 #include "next_step.h"
-#include <complex>
-#include <eigen3/Eigen/Dense>
-#include <iostream>
-#include <random>
-#include <vector>
-
 #include <algorithm>
 #include <cmath>
 #include <complex>
+#include <eigen3/Eigen/Dense>
 #include <functional>
 #include <iostream>
+#include <random>
 #include <stdexcept>
 #include <vector>
 
@@ -253,6 +249,41 @@ jenkins_traub_inner(const std::vector<std::complex<double>> &coefficients,
       continue;
     }
   }
+}
+
+// Assuming synthetic_division, jenkins_traub_inner are already defined
+
+std::vector<std::complex<double>>
+jenkins_traub(const std::vector<std::complex<double>> &input_coefficients,
+              double epsilon, int max_iterations) {
+  std::vector<std::complex<double>> coefficients = input_coefficients;
+  std::vector<std::complex<double>> roots;
+
+  // Remove leading coefficients equal to 0
+  while (!coefficients.empty() &&
+         coefficients.front() == std::complex<double>(0, 0)) {
+    coefficients.erase(coefficients.begin());
+  }
+
+  if (coefficients.empty()) {
+    std::cout << "Fed the zero polynomial. Roots are all complex numbers."
+              << std::endl;
+    return {};
+  } else if (coefficients.size() == 1) {
+    std::cout << "Fed a constant. There are no roots." << std::endl;
+    return {};
+  }
+
+  for (size_t x = 0; x < coefficients.size() - 1; ++x) {
+    if (coefficients.size() > 1) {
+      auto [deflated, s] =
+          jenkins_traub_inner(coefficients, epsilon, max_iterations);
+      roots.push_back(s);
+      coefficients = synthetic_division(coefficients, s).first;
+    }
+  }
+
+  return roots;
 }
 
 int main() {
