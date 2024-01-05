@@ -123,7 +123,7 @@ std::tuple<std::vector<std::complex<double>>, std::complex<double>, int> stage3(
 
     if (num_iterations >= max_iterations) {
         std::cerr << "Stage 3 could not converge after " << num_iterations << " iterations" << std::endl;
-        throw std::logic_error("huy");
+        throw std::logic_error("Too many iterations");
     }
 
     return {H_bar_lambda, s_lambda, num_iterations};
