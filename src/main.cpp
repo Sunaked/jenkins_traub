@@ -9,25 +9,26 @@
 #include <stdexcept>
 #include <vector>
 
-std::pair<std::vector<std::complex<double>>, std::complex<double>>
-synthetic_division(const std::vector<std::complex<double>> &coefficients,
-                   std::complex<double> s) {
-  std::vector<std::complex<double>> deflated(coefficients.size() - 1);
-  deflated[0] = coefficients[0];
+Eigen::VectorXcd convertToEigenVectorXcd(const std::vector<std::complex<double>>& stdVector) {
+    Eigen::VectorXcd eigenVector(stdVector.size());
+    for (size_t i = 0; i < stdVector.size(); ++i) {
+        eigenVector[i] = stdVector[i];
+    }
+    return eigenVector;
+}
 
-  for (size_t i = 1; i < coefficients.size() - 1; ++i) {
-    deflated[i] = coefficients[i] + deflated[i - 1] * s;
-  }
-
-  std::complex<double> evaluation = coefficients.back() + deflated.back() * s;
-
-  return {deflated, evaluation};
+std::vector<std::complex<double>> convertToVectorFromEigenVectorXcd(const Eigen::VectorXcd& eigenVector) {
+    std::vector<std::complex<double>> vec(eigenVector.size());
+    for (size_t i = 0; i < eigenVector.size(); ++i) {
+        vec[i] = eigenVector[i];
+    }
+    return vec;
 }
 
 std::function<std::complex<double>(std::complex<double>)>
 evaluate(const std::vector<std::complex<double>> &coefficients) {
   return [coefficients](std::complex<double> s) {
-    return synthetic_division(coefficients, s).second;
+    return synthetic_division(convertToEigenVectorXcd(coefficients), s).second;
   };
 }
 
@@ -44,8 +45,7 @@ stage1(const std::vector<std::complex<double>> &a,
   for (num_iterations = 0; num_iterations < max_iterations; ++num_iterations) {
     try {
       // next_step needs to be implemented
-      std::tie(H_bar_lambda, ignore) =
-          next_step(a, H_bar_lambda, 0, epsilon, false);
+      H_bar_lambda = next_step(a, H_bar_lambda, 0, epsilon, false);
     } catch (std::exception &e) {
       break;
     }
@@ -71,7 +71,7 @@ stage2(const std::vector<std::complex<double>> &a,
     t_prev = t;
 
     try {
-      std::tie(H_bar_lambda, t) = next_step(a, H_bar_lambda, s, epsilon);
+      H_bar_lambda = next_step(a, H_bar_lambda, s, epsilon);
     } catch (std::exception &e) {
       break;
     }
@@ -94,11 +94,11 @@ std::tuple<std::vector<std::complex<double>>, std::complex<double>, int>
 stage3(const std::vector<std::complex<double>> &a,
        const std::vector<std::complex<double>> &H_L, std::complex<double> s,
        double epsilon, int max_iterations) {
-  std::vector<std::complex<double>> polynomial = evaluate(a);
+  auto polynomial = evaluate(a);
   std::vector<std::complex<double>> H_bar_coefficients(H_L.size());
   std::transform(H_L.begin(), H_L.end(), H_bar_coefficients.begin(),
                  [&H_L](std::complex<double> val) { return val / H_L[0]; });
-  std::vector<std::complex<double>> H_bar = evaluate(H_bar_coefficients);
+  auto H_bar = evaluate(H_bar_coefficients);
 
   std::complex<double> s_L = s - polynomial(s) / H_bar(s);
   std::vector<std::complex<double>> H_bar_lambda = H_bar_coefficients;
@@ -111,20 +111,23 @@ stage3(const std::vector<std::complex<double>> &a,
     std::vector<std::complex<double>> p, h_bar;
     std::complex<double> p_at_s_lambda, h_bar_at_s_lambda;
 
-    std::tie(p, p_at_s_lambda) = synthetic_division(a, s_lambda);
-    std::tie(h_bar, h_bar_at_s_lambda) =
-        synthetic_division(H_bar_lambda, s_lambda);
-    h_bar.insert(h_bar.begin(), 0);
+    // std::tie(p, p_at_s_lambda) = synthetic_division(a, s_lambda);
+    auto p_ = synthetic_division(convertToEigenVectorXcd(a), s_lambda);
+    // std::tie(h_bar, h_bar_at_s_lambda) = synthetic_division(H_bar_lambda, s_lambda);
 
-    if (abs(p_at_s_lambda) < epsilon) {
-      return {H_bar_lambda, s_lambda, num_iterations};
+    //NEDD FIX
+    auto h_bar_ = synthetic_division(convertToEigenVectorXcd(H_bar_lambda), s_lambda); //---
+    h_bar.insert(h_bar.begin(), 0);//---
+
+    if (abs(p_at_s_lambda) < epsilon) {//---
+      return {H_bar_lambda, s_lambda, num_iterations};//---
     }
 
     std::vector<std::complex<double>> H_bar_lambda_next = p;
     for (size_t i = 0; i < p.size(); ++i) {
       H_bar_lambda_next[i] -= (p_at_s_lambda / h_bar_at_s_lambda) * h_bar[i];
     }
-    std::vector<std::complex<double>> H_bar_next = evaluate(H_bar_lambda_next);
+    auto H_bar_next = evaluate(H_bar_lambda_next);
 
     num_iterations++;
 
@@ -279,7 +282,7 @@ jenkins_traub(const std::vector<std::complex<double>> &input_coefficients,
       auto [deflated, s] =
           jenkins_traub_inner(coefficients, epsilon, max_iterations);
       roots.push_back(s);
-      coefficients = synthetic_division(coefficients, s).first;
+      coefficients = convertToVectorFromEigenVectorXcd(synthetic_division(convertToEigenVectorXcd(coefficients), s).first);
     }
   }
 
