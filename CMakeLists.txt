@@ -10,6 +10,8 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 # Add your source files here
 set(SOURCES 
   src/main.cpp
+  src/next_step.cpp
+  src/synthetic_division.cpp
 )
 
 

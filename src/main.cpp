@@ -45,13 +45,13 @@ stage1(const std::vector<std::complex<double>> &a,
   for (num_iterations = 0; num_iterations < max_iterations; ++num_iterations) {
     try {
       // next_step needs to be implemented
-      H_bar_lambda = next_step(a, H_bar_lambda, 0, epsilon, false);
+      H_bar_lambda = convertToVectorFromEigenVectorXcd(next_step(convertToEigenVectorXcd(a), convertToEigenVectorXcd(H_bar_lambda), 0, epsilon, false));
     } catch (std::exception &e) {
       break;
     }
   }
 
-  return {H_bar_lambda, num_iterations};
+  return H_bar_lambda;
 }
 
 std::pair<std::vector<std::complex<double>>, int>
@@ -71,7 +71,7 @@ stage2(const std::vector<std::complex<double>> &a,
     t_prev = t;
 
     try {
-      H_bar_lambda = next_step(a, H_bar_lambda, s, epsilon);
+      H_bar_lambda = convertToVectorFromEigenVectorXcd(next_step(convertToEigenVectorXcd(a), convertToEigenVectorXcd(H_bar_lambda), 0, epsilon, false));
     } catch (std::exception &e) {
       break;
     }
@@ -290,18 +290,11 @@ jenkins_traub(const std::vector<std::complex<double>> &input_coefficients,
 }
 
 int main() {
-  // Example usage
-  std::vector<std::complex<double>> modified_coefficients = {1, -8, 5, 14};
-  std::vector<std::complex<double>> modified_derivative = {3, -16, 5};
-
-  auto mod_function = evaluate(modified_coefficients);
-  auto mod_derivative = evaluate(modified_derivative);
-
-  std::complex<double> x_0 = 1;
-  std::complex<double> beta =
-      newton(x_0, mod_function, mod_derivative, 0.01, 500);
-
-  std::cout << "Beta: " << beta << std::endl;
-
+  auto solutions = jenkins_traub({1.0, -9.01, 27.08, -41.19, 32.22, -10.1}, 0.1e10, 1000);
+  for (size_t i = 0; i < solutions.size(); i++)
+  {
+    std::cout << solutions[i] << "\n";
+  }
+  
   return 0;
 }

@@ -5,8 +5,8 @@
 #include "synthetic_division.h"
 #include <stdexcept>
 
-Eigen::VectorXd next_step(const Eigen::VectorXd &a,
-                          const Eigen::VectorXd &H_bar_lambda, double s,
+Eigen::VectorXcd next_step(Eigen::VectorXcd a,
+                          Eigen::VectorXcd H_bar_lambda, std::complex<double> s,
                           double epsilon, bool generate_t = true);
 
 #endif // NEXT_STEP
