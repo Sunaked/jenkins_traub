@@ -1,7 +1,7 @@
 #ifndef NEXT_STEP
 #define NEXT_STEP
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <stdexcept>
 
 #endif // NEXT_STEP
