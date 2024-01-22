@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(jenkins_traub)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package(Boost 1.82 REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
