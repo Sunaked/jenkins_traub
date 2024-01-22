@@ -12,7 +12,6 @@ set(SOURCES
   src/main.cpp
   src/newton.h
   src/newton.cpp
-  newton.cc
   src/next_step.h
   src/next_step.cpp
   src/synthetic_division.cpp
