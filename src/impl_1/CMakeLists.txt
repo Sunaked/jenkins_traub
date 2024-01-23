@@ -6,12 +6,13 @@ set(CMAKE_CXX_STANDARD 20)
 
 #find_package(Boost 1.82 REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Boost 1.8.0 COMPONENTS boost)
 
 # Add your source files here
 set(SOURCES 
   main.cpp
-  fin_polynomial_roots_jenkins_traub.cpp
-  fin_polynomial_roots_jenkins_traub.hpp
+  find_polynomial_roots_jenkins_traub.cpp
+  find_polynomial_roots_jenkins_traub.hpp
   polynomial.cpp
   polynomial.hpp
   )

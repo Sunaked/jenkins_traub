@@ -1,16 +1,11 @@
 cmake_minimum_required(VERSION 3.14...3.22)
-project(my_project LANGUAGES CXX)
+project(tests_impl1 LANGUAGES CXX)
 
-# GoogleTest requires at least C++17
+# GoogleTest requires at least C++20
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CC /usr/local/bin/clang)
-set(CXX /usr/local/bin/clang)
 
 
-
-
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -23,26 +18,19 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-include_directories("${PROJECT_SOURCE_DIR}/../src")  
 
 
 add_executable(
 	${PROJECT_NAME}
-	hello_test.cc
-	utils_test.cc
-	jenkins_test.cc
-	../src/newton.h
-	../src/newton.cpp
-	../src/utils.h
-	../src/utils.cpp
-	../src/synthetic_division.h
-	../src/synthetic_division.cpp
+	find_polynomial_roots_jenkins_traub_test.cc
+  ../../src/impl_1/polynomial.cpp
+  ../../src/impl_1/find_polynomial_roots_jenkins_traub.cpp
 )
 
+target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/../../")  
 target_link_libraries(
   ${PROJECT_NAME}
   GTest::gtest_main
-  Eigen3::Eigen
 )
 
 include(GoogleTest)

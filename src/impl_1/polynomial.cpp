@@ -1,7 +1,7 @@
-#include "polynomial.h"
+#include "polynomial.hpp"
 
-#include <Eigen/Core>
 #include <cmath>
+#include <eigen3/Eigen/Core>
 
 namespace rpoly_plus_plus {
 
