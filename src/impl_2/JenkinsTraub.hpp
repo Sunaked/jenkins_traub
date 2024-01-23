@@ -2,6 +2,7 @@
 #define EE6A8B2F_613F_4546_86D5_48B37A48B86B
 
 #include <cmath>
+#include <vector>
 
 class JenkinsTraub
 {
@@ -24,6 +25,11 @@ public:
      * solves polynomial with 'op' coefficients and writes answers to 'zeror' and 'zeroi'
     */
     static int Solve(double *op, int degree, double *zeror, double *zeroi);
+
+    /**
+     * solves polynomial with 'op' coefficients and writes answers to 'zeror' and 'zeroi'
+    */
+    static int Solve(std::vector<double> op, int degree, std::vector<double>& zeror, std::vector<double>& zeroi);
 };
 
 

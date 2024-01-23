@@ -203,6 +203,16 @@ _99:
   return degree - n;
 }
 
+int JenkinsTraub::Solve(std::vector<double> op, int degree, std::vector<double> &zeror, std::vector<double> &zeroi)
+{
+  double zeror_[degree];
+  double zeroi_[degree];
+  int roots_n = Solve(&op[0], degree, zeror_, zeroi_);
+  zeror.assign(zeror_, zeror_ + roots_n);
+  zeroi.assign(zeroi_, zeroi_ + roots_n);
+  return roots_n;
+}
+
 void JenkinsTraub::Fxshfr(int l2, int *nz)
 {
   double svu, svv, ui, vi, s;
