@@ -18,12 +18,12 @@ int JenkinsTraub::Solve(double *op, int degree, double *zeror, double *zeroi)
   mre = eta;
   lo = smalno / eta;
   /*  Initialization of constants for shift rotation. */
-  xx = sqrt(0.5);
+  xx = std::sqrt(0.5);
   yy = -xx;
   rot = 94.0;
   rot *= 0.017453293;
-  cosr = cos(rot);
-  sinr = sin(rot);
+  cosr = std::cos(rot);
+  sinr = std::sin(rot);
   n = degree;
   /*  Algorithm fails of the leading coefficient is zero. */
   if (op[0] == 0.0) return -1;
@@ -65,7 +65,7 @@ _40:
   max = 0.0;
   min = infin;
   for (i = 0; i <= n; i++) {
-    x = fabs(p[i]);
+    x = std::fabs(p[i]);
     if (x > max) max = x;
     if (x != 0.0 && x < min) min = x;
   }
@@ -81,17 +81,17 @@ _40:
     if (max < 10.0) goto _110;
     if (sc == 0.0) sc = smalno;
   }
-  l = (int)(log(sc) / log(base) + 0.5);
-  factor = pow(base * 1.0, l);
+  l = (int)(std::log(sc) / std::log(base) + 0.5);
+  factor = std::pow(base * 1.0, l);
   if (factor != 1.0) {
     for (i = 0; i <= n; i++) p[i] = factor * p[i]; /* Scale polynomial. */
   }
 _110:
   /*  Compute lower bound on moduli of roots. */
-  for (i = 0; i <= n; i++) { pt[i] = (fabs(p[i])); }
+  for (i = 0; i <= n; i++) { pt[i] = (std::fabs(p[i])); }
   pt[n] = -pt[n];
   /*  Compute upper estimate of bound. */
-  x = exp((log(-pt[n]) - log(pt[0])) / (double)n);
+  x = std::exp((std::log(-pt[n]) - std::log(pt[0])) / (double)n);
   /*  If Newton step at the origin is better, use it. */
   if (pt[n - 1] != 0.0) {
     xm = -pt[n] / pt[n - 1];
@@ -101,7 +101,7 @@ _110:
   while (1) {
     xm = x * 0.1;
     ff = pt[0];
-    for (i = 1; i <= n; i++) ff = ff * xm + pt[i];
+    for (i = 1; i <= n; i++) ff = std::fma(ff, xm, pt[i]);
     if (ff <= 0.0) break;
     x = xm;
   }
@@ -109,14 +109,14 @@ _110:
   /*  Do Newton interation until x converges to two
    *  decimal places.
    */
-  while (fabs(dx / x) > 0.005) {
+  while (std::fabs(dx / x) > 0.005) {
     ff = pt[0];
     df = ff;
     for (i = 1; i < n; i++) {
-      ff = ff * x + pt[i];
-      df = df * x + ff;
+      ff = std::fma(ff, x, pt[i]);
+      df = std::fma(df, x, ff);
     }
-    ff = ff * x + pt[n];
+    ff = std::fma(ff, x, pt[n]);
     dx = ff / df;
     x -= dx;
   }
@@ -137,10 +137,10 @@ _110:
       t = -aa / cc;
       for (i = 0; i < nm1; i++) {
         j = n - i - 1;
-        k[j] = t * k[j - 1] + p[j];
+        k[j] = std::fma(t, k[j - 1], p[j]);
       }
       k[0] = p[0];
-      zerok = (fabs(k[n - 1]) <= fabs(bb) * eta * 10.0);
+      zerok = (std::fabs(k[n - 1]) <= std::fabs(bb) * eta * 10.0);
     } else {
       /*  Use unscaled form of recurrence. */
       for (i = 0; i < nm1; i++) {
@@ -328,21 +328,21 @@ _10:
    *  close to multiple or nearly equal and of opposite
    *  sign.
    */
-  if (fabs(fabs(szr) - fabs(lzr)) > 0.01 * fabs(lzr)) return;
+  if (std::fabs(std::fabs(szr) - std::fabs(lzr)) > 0.01 * std::fabs(lzr)) return;
   /*  Evaluate polynomial by quadratic synthetic division. */
   Quadsd(n, &u, &v, p, qp, &a, &b);
-  mp = fabs(a - szr * b) + fabs(szi * b);
+  mp = std::fabs(a - szr * b) + std::fabs(szi * b);
   /*  Compute a rigorous bound on the rounding error in
    *  evaluating p.
    */
-  zm = sqrt(fabs(v));
-  ee = 2.0 * fabs(qp[0]);
+  zm = std::sqrt(std::fabs(v));
+  ee = 2.0 * std::fabs(qp[0]);
   t = -szr * b;
-  for (i = 1; i < n; i++) { ee = ee * zm + fabs(qp[i]); }
-  ee = ee * zm + fabs(a + t);
+  for (i = 1; i < n; i++) { ee = ee * zm + std::fabs(qp[i]); }
+  ee = ee * zm + std::fabs(a + t);
   ee *= (5.0 * mre + 4.0 * are);
-  ee = ee - (5.0 * mre + 2.0 * are) * (fabs(a + t) + fabs(b * zm));
-  ee = ee + 2.0 * are * fabs(t);
+  ee = ee - (5.0 * mre + 2.0 * are) * (std::fabs(a + t) + std::fabs(b * zm));
+  ee = ee + 2.0 * are * std::fabs(t);
   /*  Iteration has converged sufficiently if the
    *  polynomial value is less than 20 times this bound.
    */
@@ -361,9 +361,9 @@ _30:
    *  to the cluster.
    */
   if (relstp < eta) relstp = eta;
-  relstp = sqrt(relstp);
+  relstp = std::sqrt(relstp);
   u = u - u * relstp;
-  v = v + v * relstp;
+  v = std::fma(v, relstp, v);
   Quadsd(n, &u, &v, p, qp, &a, &b);
   for (i = 0; i < 5; i++) {
     Calcsc(&type);
@@ -380,7 +380,7 @@ _50:
   Newest(type, &ui, &vi);
   /*  If vi is zero the iteration is not converging. */
   if (vi == 0.0) return;
-  relstp = fabs((vi - v) / vi);
+  relstp = std::fabs((vi - v) / vi);
   u = ui;
   v = vi;
   goto _10;
@@ -406,14 +406,14 @@ void JenkinsTraub::Realit(double sss, int *nz, int *iflag)
     /*  Evaluate p at s. */
     qp[0] = pv;
     for (i = 1; i <= n; i++) {
-      pv = pv * s + p[i];
+      pv = std::fma(pv, s, p[i]);
       qp[i] = pv;
     }
-    mp = fabs(pv);
+    mp = std::fabs(pv);
     /*  Compute a rigorous bound on the error in evaluating p. */
-    ms = fabs(s);
-    ee = (mre / (are + mre)) * fabs(qp[0]);
-    for (i = 1; i <= n; i++) { ee = ee * ms + fabs(qp[i]); }
+    ms = std::fabs(s);
+    ee = (mre / (are + mre)) * std::fabs(qp[0]);
+    for (i = 1; i <= n; i++) { ee = std::fma(ee, ms, std::fabs(qp[i])); }
     /*  Iteration has converged sufficiently if the polynomial
      *  value is less than 20 times this bound.
      */
@@ -426,7 +426,7 @@ void JenkinsTraub::Realit(double sss, int *nz, int *iflag)
     /*  Stop iteration after 10 steps. */
     if (j > 10) return;
     if (j < 2) goto _50;
-    if (fabs(t) > 0.001 * fabs(s - t) || mp < omp) goto _50;
+    if (std::fabs(t) > 0.001 * std::fabs(s - t) || mp < omp) goto _50;
     /*  A cluster of zeros near the real axis has been
      *  encountered. Return with iflag set to initiate a
      *  quadratic iteration.
@@ -440,10 +440,10 @@ void JenkinsTraub::Realit(double sss, int *nz, int *iflag)
     kv = k[0];
     qk[0] = kv;
     for (i = 1; i < n; i++) {
-      kv = kv * s + k[i];
+      kv = std::fma(kv, s, k[i]);
       qk[i] = kv;
     }
-    if (fabs(kv) <= fabs(k[n]) * 10.0 * eta) {
+    if (std::fabs(kv) <= std::fabs(k[n]) * 10.0 * eta) {
       /*  Use unscaled form. */
       k[0] = 0.0;
       for (i = 1; i < n; i++) { k[i] = qk[i - 1]; }
@@ -458,7 +458,7 @@ void JenkinsTraub::Realit(double sss, int *nz, int *iflag)
     kv = k[0];
     for (i = 1; i < n; i++) { kv = kv * s + k[i]; }
     t = 0.0;
-    if (fabs(kv) > fabs(k[n - 1] * 10.0 * eta)) t = -pv / kv;
+    if (std::fabs(kv) > std::fabs(k[n - 1] * 10.0 * eta)) t = -pv / kv;
     s += t;
   }
 }
@@ -473,22 +473,22 @@ void JenkinsTraub::Calcsc(int *type)
 {
   /*  Synthetic division of k by the quadratic 1,u,v */
   Quadsd(n - 1, &u, &v, k, qk, &c, &d);
-  if (fabs(c) > fabs(k[n - 1] * 100.0 * eta)) goto _10;
-  if (fabs(d) > fabs(k[n - 2] * 100.0 * eta)) goto _10;
+  if (std::fabs(c) > std::fabs(k[n - 1] * 100.0 * eta)) goto _10;
+  if (std::fabs(d) > std::fabs(k[n - 2] * 100.0 * eta)) goto _10;
   *type = 3;
   /*  Type=3 indicates the quadratic is almost a factor of k. */
   return;
 _10:
-  if (fabs(d) < fabs(c)) {
+  if (std::fabs(d) < std::fabs(c)) {
     *type = 1;
     /*  Type=1 indicates that all formulas are divided by c. */
     e = a / c;
     f = d / c;
     g = u * e;
     h = v * b;
-    a3 = a * e + (h / c + g) * b;
+    a3 = std::fma(a, e, (h / c + g) * b);
     a1 = b - a * (d / c);
-    a7 = a + g * d + h * f;
+    a7 = std::fma(g, d, a) + h * f;
     return;
   }
   *type = 2;
@@ -497,9 +497,9 @@ _10:
   f = c / d;
   g = u * b;
   h = v * b;
-  a3 = (a + g) * e + h * (b / d);
-  a1 = b * f - a;
-  a7 = (f + u) * a + h;
+  a3 = std::fma((a + g), e, h * (b / d));
+  a1 = std::fma(b, f, -a);
+  a7 = std::fma((f + u), a, h);
 }
 /*  Computes the next k polynomials using scalars
  *  computed in Calcsc.
@@ -518,7 +518,7 @@ void JenkinsTraub::Nextk(int *type)
   }
   temp = a;
   if (*type == 1) temp = b;
-  if (fabs(a1) <= fabs(temp) * eta * 10.0) {
+  if (std::fabs(a1) <= std::fabs(temp) * eta * 10.0) {
     /*  If a1 is nearly zero then use a special form of the
      *  recurrence.
      */
@@ -548,11 +548,11 @@ void JenkinsTraub::Newest(int type, double *uu, double *vv)
     return;
   }
   if (type == 2) {
-    a4 = (a + g) * f + h;
-    a5 = (f + u) * c + v * d;
+    a4 = std::fma((a + g), f, h);
+    a5 = std::fma((f + u), c, v * d);
   } else {
-    a4 = a + u * b + h * f;
-    a5 = c + (u + v * f) * d;
+    a4 = std::fma(u, b, a) + h * f;
+    a5 = std::fma(std::fma(v, f, u), d, c);
   }
   /*  Evaluate new quadratic coefficients. */
   b1 = -k[n - 1] / p[n];
@@ -619,21 +619,21 @@ void JenkinsTraub::Quad(double a, double b1, double c, double *sr, double *si, d
   }
   /* Compute discriminant avoiding overflow. */
   b = b1 / 2.0;
-  if (fabs(b) < fabs(c)) {
+  if (std::fabs(b) < std::fabs(c)) {
     if (c < 0.0)
       e = -a;
     else
       e = a;
-    e = b * (b / fabs(c)) - e;
-    d = sqrt(fabs(e)) * sqrt(fabs(c));
+    e = b * (b / std::fabs(c)) - e;
+    d = std::sqrt(std::fabs(e)) * std::sqrt(std::fabs(c));
   } else {
     e = 1.0 - (a / b) * (c / b);
-    d = sqrt(fabs(e)) * fabs(b);
+    d = std::sqrt(std::fabs(e)) * std::fabs(b);
   }
   if (e < 0.0) { /* complex conjugate zeros */
     *sr = -b / a;
     *lr = *sr;
-    *si = fabs(d / a);
+    *si = std::fabs(d / a);
     *li = -(*si);
   } else {
     if (b >= 0.0) /* real zeros. */
