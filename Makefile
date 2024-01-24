@@ -37,7 +37,7 @@ build_run:
 # Execute the tests
 test:
 	@printf "${Purple}\nRunning tests...${NC}\n"
-	$(MAKE) -C tests/
+	$(MAKE) -C tests/impl_1/
 
 # Execute the benchmarks
 bench:

@@ -1,7 +1,7 @@
 #ifndef RPOLY_PLUS_PLUS_POLYNOMIAL_H_
 #define RPOLY_PLUS_PLUS_POLYNOMIAL_H_
 
-#include <Eigen/Core>
+#include <eigen3/Eigen/Core>
 
 namespace rpoly_plus_plus {
 
