@@ -3,11 +3,17 @@
 #include <vector>
 
 
+#include <boost/cstdint.hpp>
+#include <boost/integer.hpp>
+#include <boost/integer_fwd.hpp>
+#include <boost/integer_traits.hpp>
+
+#include <eigen3/Eigen/Core>
+
+
 #include "src/impl_1/find_polynomial_roots_jenkins_traub.hpp"
 #include "src/impl_1/polynomial.hpp"
 #include "test_utils.hpp"
-#include "gtest/gtest.h"
-#include <eigen3/Eigen/Core>
 
 namespace rpoly_plus_plus {
 
@@ -251,7 +257,7 @@ TEST(Polynomial, HardPolynomial1)
 
 TEST(Polynomial, HardPolynomial2)
 {
-  Eigen::VectorXd polynomial(20);
+  using BigVector = Matrix < Eigen::VectorXd polynomial(20);
   Eigen::VectorXd roots_re(19);
   Eigen::VectorXd roots_im(19);
 

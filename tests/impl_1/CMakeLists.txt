@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 
+find_package(Boost 1.81.0 REQUIRED)
+
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -31,6 +33,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/../../
 target_link_libraries(
   ${PROJECT_NAME}
   GTest::gtest_main
+  Boost::boost
 )
 
 include(GoogleTest)
