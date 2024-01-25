@@ -17,6 +17,7 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 
+message(STATUS "PROJECT_SOURCE_DIR = " ${PROJECT_SOURCE_DIR})
 
-target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/../")
+target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/../../")
 

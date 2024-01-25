@@ -4,32 +4,33 @@
 #include <cmath>
 #include <vector>
 
-class JenkinsTraub
+template<typename T> class JenkinsTraub
 {
 private:
-    static void Quad(double a, double b1, double c, double *sr, double *si, double *lr, double *li);
-    static void Fxshfr(int l2, int *nz);
-    static void Quadit(double *uu, double *vv, int *nz);
-    static void Realit(double sss, int *nz, int *iflag);
-    static void Calcsc(int *type);
-    static void Nextk(int *type);
-    static void Newest(int type, double *uu, double *vv);
-    static void Quadsd(int n, double *u, double *v, double *p, double *q, double *a, double *b);
-    static inline double *p, *qp, *k, *qk, *svk;
-    static inline double sr, si, u, v, a, b, c, d, a1, a2;
-    static inline double a3, a6, a7, e, f, g, h, szr, szi, lzr, lzi;
-    static inline double eta, are, mre;
-    static inline int n, nn, nmi, zerok;
-public:
-    /**
-     * solves polynomial with 'op' coefficients and writes answers to 'zeror' and 'zeroi'
-    */
-    static int Solve(double *op, int degree, double *zeror, double *zeroi);
+  static void Quad(T a, T b1, T c, T *sr, T *si, T *lr, T *li);
+  static void Fxshfr(int l2, int *nz);
+  static void Quadit(T *uu, T *vv, int *nz);
+  static void Realit(T sss, int *nz, int *iflag);
+  static void Calcsc(int *type);
+  static void Nextk(int *type);
+  static void Newest(int type, T *uu, T *vv);
+  static void Quadsd(int n, T *u, T *v, T *p, T *q, T *a, T *b);
+  static inline T *p, *qp, *k, *qk, *svk;
+  static inline T sr, si, u, v, a, b, c, d, a1, a2;
+  static inline T a3, a6, a7, e, f, g, h, szr, szi, lzr, lzi;
+  static inline T eta, are, mre;
+  static inline int n, nn, nmi, zerok;
 
-    /**
-     * solves polynomial with 'op' coefficients and writes answers to 'zeror' and 'zeroi'
-    */
-    static int Solve(std::vector<double> op, int degree, std::vector<double>& zeror, std::vector<double>& zeroi);
+public:
+  /**
+   * solves polynomial with 'op' coefficients and writes answers to 'zeror' and 'zeroi'
+   */
+  static int Solve(T *op, int degree, T *zeror, T *zeroi);
+
+  /**
+   * solves polynomial with 'op' coefficients and writes answers to 'zeror' and 'zeroi'
+   */
+  static int Solve(std::vector<T> op, int degree, std::vector<T> &zeror, std::vector<T> &zeroi);
 };
 
 
