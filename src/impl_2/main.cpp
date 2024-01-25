@@ -1,5 +1,6 @@
+#include "JenkinsTraub.cpp"
 #include "JenkinsTraub.hpp"
-#include "framework.h"
+#include "src/framework.h"
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
@@ -36,7 +37,7 @@ void Test_0()
   double op[3] = { 1.0, 2.0, 3.0 };
   double zeror[3];
   double zeroi[3];
-  int num_of_roots = JenkinsTraub::Solve(op, 2, zeror, zeroi);
+  int num_of_roots = JenkinsTraub<double>::Solve(op, 2, zeror, zeroi);
   std::cout << "TEST 0 ============================\n";
   std::cout << "Roots found: " << num_of_roots << "\n";
   if (num_of_roots > 0) {
@@ -52,7 +53,7 @@ void Test_1()
   double op[10] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
   double zeror[10];
   double zeroi[10];
-  int num_of_roots = JenkinsTraub::Solve(op, 9, zeror, zeroi);
+  int num_of_roots = JenkinsTraub<double>::Solve(op, 9, zeror, zeroi);
   std::cout << "TEST 1 ============================\n";
   std::cout << "Roots found: " << num_of_roots << "\n";
   if (num_of_roots > 0) {
@@ -68,7 +69,7 @@ void Test_0v()
 {
   std::vector<double> op = { 1.0, 2.0, 3.0 };
   std::vector<double> zeror, zeroi;
-  int num_of_roots = JenkinsTraub::Solve(op, op.size(), zeror, zeroi);
+  int num_of_roots = JenkinsTraub<double>::Solve(op, op.size(), zeror, zeroi);
   std::cout << "TEST 0v ============================\n";
   print_op(op);
   std::cout << "Roots found: " << num_of_roots << "\n";
@@ -84,7 +85,7 @@ void Test_1v()
 {
   std::vector<double> op = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
   std::vector<double> zeror, zeroi;
-  int num_of_roots = JenkinsTraub::Solve(op, op.size(), zeror, zeroi);
+  int num_of_roots = JenkinsTraub<double>::Solve(op, op.size(), zeror, zeroi);
   std::cout << "TEST 1v ============================\n";
   print_op(op);
   std::cout << "Roots found: " << num_of_roots << "\n";
@@ -110,7 +111,7 @@ void Test_2v()
     -28342.548095425875,
     -52412.8655144021 };
   std::vector<double> zeror, zeroi;
-  int num_of_roots = JenkinsTraub::Solve(op, op.size(), zeror, zeroi);
+  int num_of_roots = JenkinsTraub<double>::Solve(op, op.size(), zeror, zeroi);
   std::cout << "TEST 1v ============================\n";
   print_op(op);
   std::cout << "Roots found: " << num_of_roots << "\n";
@@ -124,9 +125,6 @@ void Test_2v()
 
 int main(int argc, char const *argv[])
 {
-
-  Test_0();
-  Test_1();
 
   Test_0v();
   Test_1v();

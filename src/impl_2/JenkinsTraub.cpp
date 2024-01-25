@@ -1,7 +1,7 @@
 #include "JenkinsTraub.hpp"
 
 
-int JenkinsTraub::Solve(double *op, int degree, double *zeror, double *zeroi)
+template<typename T> int JenkinsTraub<T>::Solve(T *op, int degree, T *zeror, T *zeroi)
 {
   double t, aa, bb, cc, *temp, factor, rot;
   double *pt;
@@ -203,7 +203,8 @@ _99:
   return degree - n;
 }
 
-int JenkinsTraub::Solve(std::vector<double> op, int degree, std::vector<double> &zeror, std::vector<double> &zeroi)
+template<typename T>
+int JenkinsTraub<T>::Solve(std::vector<T> op, int degree, std::vector<T> &zeror, std::vector<T> &zeroi)
 {
   double zeror_[degree];
   double zeroi_[degree];
@@ -213,7 +214,7 @@ int JenkinsTraub::Solve(std::vector<double> op, int degree, std::vector<double> 
   return roots_n;
 }
 
-void JenkinsTraub::Fxshfr(int l2, int *nz)
+template<typename T> void JenkinsTraub<T>::Fxshfr(int l2, int *nz)
 {
   double svu, svv, ui, vi, s;
   double betas, betav, oss, ovv, ss, vv, ts, tv;
@@ -320,7 +321,7 @@ void JenkinsTraub::Fxshfr(int l2, int *nz)
  *  uu, vv - coefficients of starting quadratic.
  *  nz - number of zeros found.
  */
-void JenkinsTraub::Quadit(double *uu, double *vv, int *nz)
+template<typename T> void JenkinsTraub<T>::Quadit(T *uu, T *vv, int *nz)
 {
   double ui, vi;
   double mp, omp, ee, relstp, t, zm;
@@ -400,7 +401,7 @@ _50:
  *  nz  - number of zeros found
  *  iflag - flag to indicate a pair of zeros near real axis.
  */
-void JenkinsTraub::Realit(double sss, int *nz, int *iflag)
+template<typename T> void JenkinsTraub<T>::Realit(T sss, int *nz, int *iflag)
 {
   double pv, kv, t, s;
   double ms, mp, omp, ee;
@@ -479,7 +480,7 @@ void JenkinsTraub::Realit(double sss, int *nz, int *iflag)
  *  type - integer variable set here indicating how the
  *  calculations are normalized to avoid overflow.
  */
-void JenkinsTraub::Calcsc(int *type)
+template<typename T> void JenkinsTraub<T>::Calcsc(int *type)
 {
   /*  Synthetic division of k by the quadratic 1,u,v */
   Quadsd(n - 1, &u, &v, k, qk, &c, &d);
@@ -514,7 +515,7 @@ _10:
 /*  Computes the next k polynomials using scalars
  *  computed in Calcsc.
  */
-void JenkinsTraub::Nextk(int *type)
+template<typename T> void JenkinsTraub<T>::Nextk(int *type)
 {
   double temp;
   int i;
@@ -546,7 +547,7 @@ void JenkinsTraub::Nextk(int *type)
 /*  Compute new estimates of the quadratic coefficients
  *  using the scalars computed in Calcsc.
  */
-void JenkinsTraub::Newest(int type, double *uu, double *vv)
+template<typename T> void JenkinsTraub<T>::Newest(int type, T *uu, T *vv)
 {
   double a4, a5, b1, b2, c1, c2, c3, c4, temp;
 
@@ -585,7 +586,7 @@ void JenkinsTraub::Newest(int type, double *uu, double *vv)
 /*  Divides p by the quadratic 1,u,v placing the quotient
  *  in q and the remainder in a,b.
  */
-void JenkinsTraub::Quadsd(int nn, double *u, double *v, double *p, double *q, double *a, double *b)
+template<typename T> void JenkinsTraub<T>::Quadsd(int nn, T *u, T *v, T *p, T *q, T *a, T *b)
 {
   double c;
   int i;
@@ -606,10 +607,8 @@ void JenkinsTraub::Quadsd(int nn, double *u, double *v, double *p, double *q, do
  *  are complex. The smaller real zero is found directly from
  *  the product of the zeros c/a.
  */
-void JenkinsTraub::Quad(double a, double b1, double c, double *sr, double *si, double *lr, double *li)
+template<typename T> void JenkinsTraub<T>::Quad(T a, T b1, T c, T *sr, T *si, T *lr, T *li)
 {
-  double b, d, e;
-
   if (a == 0.0) { /* less than two roots */
     if (b1 != 0.0)
       *sr = -c / b1;
