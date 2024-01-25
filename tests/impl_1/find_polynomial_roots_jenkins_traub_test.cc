@@ -77,6 +77,9 @@ namespace {
     VectorXd imaginary;
     VectorXd poly = ConstantPolynomial(1.23);
     for (int i = 0; i < N; ++i) { poly = AddRealRoot(poly, real_roots[i]); }
+    std::cout << __PRETTY_FUNCTION__ << "\n";
+    for (auto &val : poly) { std::cout << val << " "; };
+    std::cout << "\n";
     VectorXd *const real_ptr = use_real ? &real : NULL;
     VectorXd *const imaginary_ptr = use_imaginary ? &imaginary : NULL;
     bool success = FindPolynomialRootsJenkinsTraub(poly, real_ptr, imaginary_ptr);
@@ -253,11 +256,14 @@ TEST(Polynomial, HardPolynomial1)
   polynomial(0) = 5.576312106019016;
 
   EXPECT_TRUE(FindPolynomialRootsJenkinsTraub(polynomial, &roots_re, &roots_im));
+  std::cout << "\n\n";
+  std::cout << "roots_re: " << roots_re << "\n";
+  std::cout << "roots_im: " << roots_im << "\n";
 }
 
 TEST(Polynomial, HardPolynomial2)
 {
-  using BigVector = Matrix < Eigen::VectorXd polynomial(20);
+  Eigen::VectorXd polynomial(20);
   Eigen::VectorXd roots_re(19);
   Eigen::VectorXd roots_im(19);
 
