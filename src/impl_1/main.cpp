@@ -1,9 +1,9 @@
 #include "find_polynomial_roots_jenkins_traub.hpp"
 #include "polynomial.hpp"
 
-#include "src/framework.h"
+#include "include/framework.h"
 
-#include "src/ttmath/ttmath.h"
+#include "include/ttmath/ttmath.h"
 
 #include <iostream>
 

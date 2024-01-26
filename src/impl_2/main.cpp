@@ -1,6 +1,6 @@
 #include "JenkinsTraub.cpp"
 #include "JenkinsTraub.hpp"
-#include "src/framework.h"
+#include "include/framework.h"
 #include <algorithm>
 #include <iomanip>
 #include <iostream>

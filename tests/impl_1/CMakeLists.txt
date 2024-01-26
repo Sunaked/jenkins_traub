@@ -21,15 +21,16 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 
+set(PROJECT_DIR ${PROJECT_SOURCE_DIR}/../..)
 
 add_executable(
 	${PROJECT_NAME}
 	find_polynomial_roots_jenkins_traub_test.cc
-  ../../src/impl_1/polynomial.cpp
-  ../../src/impl_1/find_polynomial_roots_jenkins_traub.cpp
+  ${PROJECT_DIR}/src/impl_1/polynomial.cpp
+  ${PROJECT_DIR}/src/impl_1/find_polynomial_roots_jenkins_traub.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/../../")  
+target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_DIR}/")  
 target_link_libraries(
   ${PROJECT_NAME}
   GTest::gtest_main
