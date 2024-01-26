@@ -23,8 +23,8 @@ using Eigen::VectorXd;
 namespace {
 
   // For IEEE-754 doubles, machine precision is about 2e-16.
-  const double kEpsilon = 1e-10;
-  const double kEpsilonLoose = 1e-8;
+  constexpr const double kEpsilon = 1e-10;
+  constexpr const double kEpsilonLoose = 1e-8;
 
   // Return the constant polynomial p(x) = 1.23.
   VectorXd ConstantPolynomial(double value)
@@ -77,12 +77,9 @@ namespace {
     VectorXd imaginary;
     VectorXd poly = ConstantPolynomial(1.23);
     for (int i = 0; i < N; ++i) { poly = AddRealRoot(poly, real_roots[i]); }
-    std::cout << __PRETTY_FUNCTION__ << "\n";
-    for (auto &val : poly) { std::cout << val << " "; };
-    std::cout << "\n";
     VectorXd *const real_ptr = use_real ? &real : NULL;
     VectorXd *const imaginary_ptr = use_imaginary ? &imaginary : NULL;
-    bool success = FindPolynomialRootsJenkinsTraub(poly, real_ptr, imaginary_ptr);
+    bool success = FindPolynomialRootsJenkinsTraub<double>(poly, real_ptr, imaginary_ptr);
 
     EXPECT_EQ(success, true);
     if (use_real) {
@@ -106,17 +103,24 @@ TEST(Polynomial, InvalidPolynomialOfZeroLengthIsRejected)
   VectorXd poly(0, 1);
   VectorXd real;
   VectorXd imag;
-  bool success = FindPolynomialRootsJenkinsTraub(poly, &real, &imag);
+  bool success = FindPolynomialRootsJenkinsTraub<double>(poly, &real, &imag);
 
   EXPECT_EQ(success, false);
 }
+
+// TEST(Polynomial, Discriminant)
+// {
+//   Discriminant<double> result = Discriminant<double>::calculate(1.0, 0.0, -1.0);// x^2 - 1 = 0
+//   EXPECT_DOUBLE_EQ(result.D, 4.0);// D = b^2 - 4ac = 0^2 - 4*1*(-1) = 4
+//   EXPECT_DOUBLE_EQ(result.sqrt_D, 2.0);// sqrt(D) = 2
+// }
 
 TEST(Polynomial, ConstantPolynomialReturnsNoRoots)
 {
   VectorXd poly = ConstantPolynomial(1.23);
   VectorXd real;
   VectorXd imag;
-  bool success = FindPolynomialRootsJenkinsTraub(poly, &real, &imag);
+  bool success = FindPolynomialRootsJenkinsTraub<double>(poly, &real, &imag);
 
   EXPECT_EQ(success, true);
   EXPECT_EQ(real.size(), 0);
@@ -166,7 +170,7 @@ TEST(Polynomial, QuadraticPolynomialWithComplexRootsWorks)
 
   VectorXd poly = ConstantPolynomial(1.23);
   poly = AddComplexRootPair(poly, 42.42, 4.2);
-  bool success = FindPolynomialRootsJenkinsTraub(poly, &real, &imag);
+  bool success = FindPolynomialRootsJenkinsTraub<double>(poly, &real, &imag);
 
   EXPECT_EQ(success, true);
   EXPECT_EQ(real.size(), 2);
@@ -230,11 +234,11 @@ TEST(Polynomial, JenkinsTraubManyRoots)
   for (int i = 0; i < N; ++i) { poly = AddRealRoot(poly, roots[i]); }
 
   VectorXd real;
-  bool success = FindPolynomialRootsJenkinsTraub(poly, &real, NULL);
+  bool success = FindPolynomialRootsJenkinsTraub<double>(poly, &real, NULL);
   real = SortVector(real);
   EXPECT_EQ(success, true);
   EXPECT_EQ(real.size(), N);
-  for (int i = 0; i < real.size(); i++) { EXPECT_NEAR(EvaluatePolynomial(poly, real[i]), 0, kEpsilonLoose); }
+  for (int i = 0; i < real.size(); i++) { EXPECT_NEAR(EvaluatePolynomial<double>(poly, real[i]), 0, kEpsilonLoose); }
 }
 
 TEST(Polynomial, HardPolynomial1)
@@ -255,7 +259,7 @@ TEST(Polynomial, HardPolynomial1)
   polynomial(1) = 18.62488243410351;
   polynomial(0) = 5.576312106019016;
 
-  EXPECT_TRUE(FindPolynomialRootsJenkinsTraub(polynomial, &roots_re, &roots_im));
+  EXPECT_TRUE(FindPolynomialRootsJenkinsTraub<double>(polynomial, &roots_re, &roots_im));
   std::cout << "\n\n";
   std::cout << "roots_re: " << roots_re << "\n";
   std::cout << "roots_im: " << roots_im << "\n";
@@ -288,7 +292,7 @@ TEST(Polynomial, HardPolynomial2)
   polynomial(1) = 6.8768381102442575;
   polynomial(0) = 0;
 
-  EXPECT_TRUE(FindPolynomialRootsJenkinsTraub(polynomial, &roots_re, &roots_im));
+  EXPECT_TRUE(FindPolynomialRootsJenkinsTraub<double>(polynomial, &roots_re, &roots_im));
 }
 
 // This test polynomial was provided by a user.
@@ -315,12 +319,12 @@ TEST(Polynomial, JenkinsTraub4Roots2)
     for (int i = 0; i < N; ++i) { poly = AddRealRoot(poly, roots[i]); }
 
     VectorXd real;
-    const bool success = FindPolynomialRootsJenkinsTraub(poly, &real, NULL);
+    const bool success = FindPolynomialRootsJenkinsTraub<double>(poly, &real, NULL);
     EXPECT_EQ(success, true);
     real = SortVector(real);
 
     EXPECT_EQ(real.size(), N);
-    for (int i = 0; i < real.size(); i++) { EXPECT_NEAR(EvaluatePolynomial(poly, real[i]), 0, kEpsilonLoose); }
+    for (int i = 0; i < real.size(); i++) { EXPECT_NEAR(EvaluatePolynomial<double>(poly, real[i]), 0, kEpsilonLoose); }
   }
 }
 

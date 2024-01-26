@@ -36,5 +36,8 @@ target_link_libraries(
   Boost::boost
 )
 
+message(STATUS "PROJECT_SOURCE_DIR" ${PROJECT_SOURCE_DIR})
+message(STATUS "CMAKE_SOURCE_DIR" ${CMAKE_SOURCE_DIR})
+
 include(GoogleTest)
 gtest_discover_tests(${PROJECT_NAME})
