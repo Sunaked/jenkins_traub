@@ -108,12 +108,12 @@ TEST(Polynomial, InvalidPolynomialOfZeroLengthIsRejected)
   EXPECT_EQ(success, false);
 }
 
-// TEST(Polynomial, Discriminant)
-// {
-//   Discriminant<double> result = Discriminant<double>::calculate(1.0, 0.0, -1.0);// x^2 - 1 = 0
-//   EXPECT_DOUBLE_EQ(result.D, 4.0);// D = b^2 - 4ac = 0^2 - 4*1*(-1) = 4
-//   EXPECT_DOUBLE_EQ(result.sqrt_D, 2.0);// sqrt(D) = 2
-// }
+TEST(Polynomial, Discriminant)
+{
+  Discriminant<double> result = Discriminant<double>::calculate(1.0, 0.0, -1.0);// x^2 - 1 = 0
+  EXPECT_DOUBLE_EQ(result.D, 4.0);// D = b^2 - 4ac = 0^2 - 4*1*(-1) = 4
+  EXPECT_DOUBLE_EQ(result.sqrt_D, 2.0);// sqrt(D) = 2
+}
 
 TEST(Polynomial, ConstantPolynomialReturnsNoRoots)
 {

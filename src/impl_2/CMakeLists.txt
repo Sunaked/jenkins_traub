@@ -10,7 +10,7 @@ set(SOURCES
   main.cpp
   JenkinsTraub.cpp
   utils.hpp
-  ../framework.h
+  ${PROJECT_SOURCE_DIR}/../../include/framework.h
   )
 
 # Specify the executable
