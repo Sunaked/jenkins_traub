@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <numbers>
 #include <vector>
 
 
@@ -19,11 +20,20 @@ using Eigen::VectorXd;
 using Eigen::Vector3cd;
 using Eigen::VectorXcd;
 
+template<typename T> struct Discriminant
+{
+  T D;
+  T sqrt_D;
+  static inline Discriminant<T> calculate(const T a, const T b, const T c)
+  {
+    const T D = b * b - 4 * a * c;
+    const T sqrt_D = std::sqrt(std::abs(D));
+    return { D, sqrt_D };
+  };
+};
+
 namespace {
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846264338327950288
-#endif
 
   // Machine precision constants.
   static const double mult_eps = std::numeric_limits<double>::epsilon();
@@ -34,34 +44,36 @@ namespace {
   enum ConvergenceType { NO_CONVERGENCE = 0, LINEAR_CONVERGENCE = 1, QUADRATIC_CONVERGENCE = 2 };
 
   // Solves for the root of the equation ax + b = 0.
-  double FindLinearPolynomialRoots(const double a, const double b) { return -b / a; }
+  template<typename T> T FindLinearPolynomialRoots(const T a, const T b) { return -b / a; }
+
 
   // Stable quadratic roots according to BKP Horn.
   // http://people.csail.mit.edu/bkph/articles/Quadratics.pdf
-  void FindQuadraticPolynomialRoots(const double a, const double b, const double c, std::complex<double> *roots)
+  template<typename T> void FindQuadraticPolynomialRoots(const T a, const T b, const T c, std::complex<T> *roots)
   {
-    const double D = b * b - 4 * a * c;
-    const double sqrt_D = std::sqrt(std::abs(D));
+
+    Discriminant<double> discriminant = Discriminant<T>::calculate(a, b, c);
 
     // Real roots.
-    if (D >= 0) {
+    if (discriminant.D >= 0) {
       if (b >= 0) {
-        roots[0] = std::complex<double>((-b - sqrt_D) / (2.0 * a), 0);
-        roots[1] = std::complex<double>((2.0 * c) / (-b - sqrt_D), 0);
+        roots[0] = std::complex<T>((-b - discriminant.sqrt_D) / (2.0 * a), 0);
+        roots[1] = std::complex<T>((2.0 * c) / (-b - discriminant.sqrt_D), 0);
       } else {
-        roots[0] = std::complex<double>((2.0 * c) / (-b + sqrt_D), 0);
-        roots[1] = std::complex<double>((-b + sqrt_D) / (2.0 * a), 0);
+        roots[0] = std::complex<T>((2.0 * c) / (-b + discriminant.sqrt_D), 0);
+        roots[1] = std::complex<T>((-b + discriminant.sqrt_D) / (2.0 * a), 0);
       }
       return;
     }
 
     // Use the normal quadratic formula for the complex case.
-    roots[0] = std::complex<double>(-b / (2.0 * a), sqrt_D / (2.0 * a));
-    roots[1] = std::complex<double>(-b / (2.0 * a), -sqrt_D / (2.0 * a));
+    roots[0] = std::complex<T>(-b / (2.0 * a), discriminant.sqrt_D / (2.0 * a));
+    roots[1] = std::complex<T>(-b / (2.0 * a), -discriminant.sqrt_D / (2.0 * a));
   }
 
   // Perform division by a linear term of the form (z - x) and evaluate P at x.
-  void SyntheticDivisionAndEvaluate(const VectorXd &polynomial, const double x, VectorXd *quotient, double *eval)
+  template<typename T>
+  void SyntheticDivisionAndEvaluate(const VectorXd &polynomial, const T x, VectorXd *quotient, T *eval)
   {
     quotient->setZero(polynomial.size() - 1);
     (*quotient)(0) = polynomial(0);
@@ -72,6 +84,7 @@ namespace {
 
   // Perform division of a polynomial by a quadratic factor. The quadratic divisor
   // should have leading 1s.
+  // TODO:
   void QuadraticSyntheticDivision(const VectorXd &polynomial,
     const VectorXd &quadratic_divisor,
     VectorXd *quotient,
@@ -143,7 +156,7 @@ namespace {
   // for Real Polynomaials Using Quadratic Iteration" by Jenkins and Traub, SIAM
   // 1970. Please note that this variant is different than the complex-coefficient
   // version, and is estimated to be up to 4 times faster.
-  class JenkinsTraubSolver
+  template<typename T> class JenkinsTraubSolver
   {
   public:
     JenkinsTraubSolver(const VectorXd &coeffs, VectorXd *real_roots, VectorXd *complex_roots)
@@ -267,7 +280,7 @@ namespace {
     constexpr static const double kRootPairTolerance = 0.01;
   };
 
-  bool JenkinsTraubSolver::ExtractRoots()
+  template<typename T> bool JenkinsTraubSolver<T>::ExtractRoots()
   {
     if (polynomial_.size() == 0) {
       std::cout << "Invalid polynomial of size 0 passed to "
@@ -291,7 +304,7 @@ namespace {
 
     // Choose the initial starting value for the root-finding on the complex
     // plane.
-    const double kDegToRad = M_PI / 180.0;
+    const double kDegToRad = std::numbers::pi_v<T> / 180.0;
     double phi = 49.0 * kDegToRad;
 
     // Iterate until the polynomial has been completely deflated.
@@ -327,14 +340,15 @@ namespace {
   }
 
   // Stage 1: Generate K-polynomials with no shifts (i.e. zero-shifts).
-  void JenkinsTraubSolver::ApplyZeroShiftToKPolynomial(const int num_iterations)
+  template<typename T> void JenkinsTraubSolver<T>::ApplyZeroShiftToKPolynomial(const int num_iterations)
   {
     // K0 is the first order derivative of polynomial.
     k_polynomial_ = DifferentiatePolynomial(polynomial_) / polynomial_.size();
     for (int i = 1; i < num_iterations; i++) { ComputeZeroShiftKPolynomial(); }
   }
 
-  ConvergenceType JenkinsTraubSolver::ApplyFixedShiftToKPolynomial(const std::complex<double> &root,
+  template<typename T>
+  ConvergenceType JenkinsTraubSolver<T>::ApplyFixedShiftToKPolynomial(const std::complex<double> &root,
     const int max_iterations)
   {
     // Compute the fixed-shift quadratic:
@@ -393,7 +407,8 @@ namespace {
     return NO_CONVERGENCE;
   }
 
-  bool JenkinsTraubSolver::ApplyVariableShiftToKPolynomial(const ConvergenceType &fixed_shift_convergence,
+  template<typename T>
+  bool JenkinsTraubSolver<T>::ApplyVariableShiftToKPolynomial(const ConvergenceType &fixed_shift_convergence,
     const std::complex<double> &root)
   {
     attempted_linear_shift_ = false;
@@ -419,7 +434,9 @@ namespace {
   //
   // The K-polynomial shifts are otherwise exactly the same as Stage 2 after
   // accounting for a variable-shift sigma.
-  bool JenkinsTraubSolver::ApplyQuadraticShiftToKPolynomial(const std::complex<double> &root, const int max_iterations)
+  template<typename T>
+  bool JenkinsTraubSolver<T>::ApplyQuadraticShiftToKPolynomial(const std::complex<double> &root,
+    const int max_iterations)
   {
     // Only proceed if we have not already tried a quadratic shift.
     if (attempted_quadratic_shift_) { return false; }
@@ -508,7 +525,8 @@ namespace {
   // computed as:
   //   K_next(z) = 1 / (z - s) * (K(z) - K(s) / P(s) * P(z))
   //   s_next = s - P(s) / K_next(s)
-  bool JenkinsTraubSolver::ApplyLinearShiftToKPolynomial(const std::complex<double> &root, const int max_iterations)
+  template<typename T>
+  bool JenkinsTraubSolver<T>::ApplyLinearShiftToKPolynomial(const std::complex<double> &root, const int max_iterations)
   {
     if (attempted_linear_shift_) { return false; }
 
@@ -574,14 +592,14 @@ namespace {
     return ApplyQuadraticShiftToKPolynomial(root, kMaxQuadraticShiftIterations);
   }
 
-  void JenkinsTraubSolver::AddRootToOutput(const double real, const double imag)
+  template<typename T> void JenkinsTraubSolver<T>::AddRootToOutput(const double real, const double imag)
   {
     if (real_roots_ != NULL) { (*real_roots_)(num_solved_roots_) = real; }
     if (complex_roots_ != NULL) { (*complex_roots_)(num_solved_roots_) = imag; }
     ++num_solved_roots_;
   }
 
-  void JenkinsTraubSolver::RemoveZeroRoots()
+  template<typename T> void JenkinsTraubSolver<T>::RemoveZeroRoots()
   {
     int num_zero_roots = 0;
 
@@ -593,7 +611,7 @@ namespace {
     polynomial_ = polynomial_.head(polynomial_.size() - num_zero_roots).eval();
   }
 
-  bool JenkinsTraubSolver::SolveClosedFormPolynomial()
+  template<typename T> bool JenkinsTraubSolver<T>::SolveClosedFormPolynomial()
   {
     const int degree = polynomial_.size() - 1;
 
@@ -632,7 +650,7 @@ namespace {
   //
   // The unique positive zero of this polynomial is an approximate lower bound of
   // the radius of zeros of the original polynomial.
-  double JenkinsTraubSolver::ComputeRootRadius()
+  template<typename T> double JenkinsTraubSolver<T>::ComputeRootRadius()
   {
     static const double kEpsilon = 1e-2;
     static const int kMaxIterations = 100;
@@ -658,7 +676,7 @@ namespace {
   //
   // Note that removing the constant term and dividing by x is equivalent to
   // shifting the polynomial to one degree lower in our representation.
-  void JenkinsTraubSolver::ComputeZeroShiftKPolynomial()
+  template<typename T> void JenkinsTraubSolver<T>::ComputeZeroShiftKPolynomial()
   {
     // Evaluating the polynomial at zero is equivalent to the constant term
     // (i.e. the last coefficient). Note that reverse() is an expression and does
@@ -680,7 +698,8 @@ namespace {
   //                              b * c - a * d
   //
   // This is done using *only* realy arithmetic so it can be done very fast!
-  void JenkinsTraubSolver::UpdateKPolynomialWithQuadraticShift(const VectorXd &polynomial_quotient,
+  template<typename T>
+  void JenkinsTraubSolver<T>::UpdateKPolynomialWithQuadraticShift(const VectorXd &polynomial_quotient,
     const VectorXd &k_polynomial_quotient)
   {
     const double coefficient_q_k = (a_ * a_ + sigma_(1) * a_ * b_ + sigma_(2) * b_ * b_) / (b_ * c_ - a_ * d_);
@@ -699,7 +718,7 @@ namespace {
   // Zeros" by M.A. Jenkins, Doctoral Thesis, Stanford Univeristy, 1969.
   //
   // NOTE: we assume the leading term of quadratic_sigma is 1.0.
-  VectorXd JenkinsTraubSolver::ComputeNextSigma()
+  template<typename T> VectorXd JenkinsTraubSolver<T>::ComputeNextSigma()
   {
     const double u = sigma_(1);
     const double v = sigma_(2);
@@ -729,9 +748,10 @@ namespace {
 
 }// namespace
 
+template<typename T>
 bool FindPolynomialRootsJenkinsTraub(const VectorXd &polynomial, VectorXd *real_roots, VectorXd *complex_roots)
 {
-  JenkinsTraubSolver solver(polynomial, real_roots, complex_roots);
+  JenkinsTraubSolver<T> solver(polynomial, real_roots, complex_roots);
   return solver.ExtractRoots();
 }
 

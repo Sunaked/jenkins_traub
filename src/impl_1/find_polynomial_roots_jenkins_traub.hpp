@@ -15,6 +15,7 @@ namespace rpoly_plus_plus {
 // exaggerate the roots. Once a root is found (or in the real-polynomial case, a
 // pair of roots) then it is divided from the polynomial and the process is
 // repeated.
+template<typename T>
 bool FindPolynomialRootsJenkinsTraub(const Eigen::VectorXd &polynomial,
   Eigen::VectorXd *real_roots,
   Eigen::VectorXd *complex_roots);

@@ -9,3 +9,5 @@ build/
 .log
 .idea
 .swp
+.cache/
+compile_commands.json
